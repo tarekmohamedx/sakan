@@ -8,7 +8,7 @@ namespace Sakan.Application.DTOs
 {
     public class GoogleloginDTO
     {
-        public string IdToken { get; set; }
+        public string Token { get; set; }
 
     }
 }
