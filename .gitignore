@@ -1,0 +1,25 @@
+# Secrets - never commit real configuration
+appsettings*.json
+*.secrets.json
+.env
+.env.*
+
+# .NET
+bin/
+obj/
+out/
+*.user
+*.suo
+.vs/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
