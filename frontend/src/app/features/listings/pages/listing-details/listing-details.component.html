@@ -1,0 +1,218 @@
+<div class="listing-container" *ngIf="listing">
+  <!-- Title -->
+  <h1>{{ listing.title }}</h1>
+
+  <!-- Gallery -->
+  <div class="gallery" *ngIf="listing.photos?.length">
+    <img [src]="listing.photos[0]" class="main-photo" alt="Main" (click)="openImageModal(listing.photos[0])" />
+    <div class="thumbs">
+      <img
+        *ngFor="let photo of listing.photos.slice(1, 5)"
+        [src]="photo"
+        class="thumb"
+        (click)="openImageModal(photo)"
+        alt="listing image"
+      />
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="modal-overlay" *ngIf="selectedImage" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <img [src]="selectedImage" alt="Full size" class="modal-image" />
+      <button class="close-btn" (click)="closeModal()">×</button>
+    </div>
+  </div>
+
+  <!-- Details Section -->
+  <div class="details-layout">
+    <!-- Left -->
+    <div class="description">
+      <h2>{{ listing.location }}</h2>
+      <div class="icons">
+        <span>🛏 {{ listing.bedrooms }} bedroom</span>
+        <span>🛁 {{ listing.bathrooms }} bath</span>
+        <br />
+        <div class="host-summary" *ngIf="listing.host">
+          <div class="avatar-circle">
+            {{ listing.host.name?.charAt(0) | uppercase }}
+          </div>
+          <h3>Hosted by {{ listing.host.name }}</h3>
+        </div>
+      </div>
+
+      <h3>Description</h3>
+      <p>{{ listing.description }}</p>
+    </div>
+
+    <!-- Right Booking Card -->
+    <div class="booking-card">
+      <h2>£{{ listing.pricePerMonth }} / Month</h2>
+
+      <!-- Booking ranges -->
+      <div class="booking-dates" *ngIf="monthRanges.length > 0">
+        <label>Booking Ranges:</label>
+        <ul>
+          <li *ngFor="let r of monthRanges">
+            {{ r.start }} → {{ r.end }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Guests -->
+      <div class="guests">
+        <label>👤 Guests</label>
+        <div class="guest-controls">
+          <button [disabled]="guests <= 1" (click)="decreaseGuests()">-</button>
+          <span>{{ guests }}</span>
+          <button (click)="increaseGuests()">+</button>
+        </div>
+      </div>
+
+      <p class="small-muted">All utilities are included</p>
+
+      <!-- Price breakdown -->
+      <div class="price-breakdown">
+        <div class="row">
+          <span>Selected room(s) total</span>
+          <span>£{{ selectedRoomsTotal ?? 0 }}</span>
+        </div>
+        <div class="row">
+          <span>Number of rooms booked</span>
+          <span>{{ selectedRoomCount ?? 0 }}</span>
+        </div>
+        <div class="row total">
+          <span>Total costs</span>
+          <span>£{{ totalCost?.toFixed(2) ?? '0.00' }}</span>
+        </div>
+        <div class="row" *ngIf="allRoomsSelected">
+          <span>You selected all rooms (the whole apartment)</span>
+        </div>
+      </div>
+
+      <!-- Action button -->
+      <div class="text-center mt-3">
+        <button *ngIf="!requestSent" (click)="sendBookingRequest()" class="book-now">Send Booking Request</button>
+
+        <!-- <button *ngIf="requestSent" [routerLink]="['/chat']" class="book-now">Chat with Host</button> -->
+        <a
+        *ngIf="requestSent"
+        [routerLink]="['/chat']"
+        [queryParams]="{ hostId: hostId, listingId: listing.id }"
+        class="book-now"
+      >
+        Chat with Host
+      </a>
+      </div>
+      <p class="notice">When you book this apartment, your reservation will be confirmed instantly</p>
+    </div>
+  </div>
+
+  <br /><hr /><br />
+
+  <!-- Calendar -->
+  <h3 style="text-align: center;">Select check-in month</h3>
+  <div class="calendar-year-selector">
+    <button (click)="previousYear()">&#8592;</button>
+    <strong>{{ currentYear }}</strong>
+    <button (click)="nextYear()">&#8594;</button>
+  </div>
+
+  <div class="months-grid">
+    <div
+      *ngFor="let m of monthsShort; let i = index"
+      class="month-tile"
+      [class.selected]="isMonthSelected(i + 1)"
+      [class.booked]="isMonthBooked(currentYear, i + 1)"
+      [attr.aria-pressed]="isMonthSelected(i + 1)"
+      role="button"
+      (click)="selectMonth(i + 1)"
+    >
+      {{ m }}
+    </div>
+  </div>
+
+  <div *ngIf="selectedMonths.length" class="summary">
+    <p>You selected: {{ selectedMonths.length }} month(s)</p>
+    <p>{{ moveIn }} → {{ moveOut }}</p>
+  </div>
+
+  <br /><hr /><br />
+
+  <!-- Bedrooms -->
+  <h3 class="mt-5 mb-3">🛏 Bedrooms</h3>
+  <div class="room-grid">
+    <div class="room-card" *ngFor="let room of listing.bedroomList">
+      <img
+  *ngIf="room.photos?.length"
+  [src]="room.photos[0]"
+  alt="Room Image"
+  (click)="goToRoom(room.id, listing.id)"
+/>
+      <div class="info">
+        <h4>{{ room.name }}</h4>
+        <p>£{{ room.pricePerNight ?? 'N/A' }} / Month</p>
+        <div class="room-select">
+          <label>
+            <input type="checkbox" [(ngModel)]="room.selected" />
+            Select Room
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noBedrooms>
+    <p>No bedrooms available in this listing.</p>
+  </ng-template>
+
+  <br /><hr /><br />
+  <!-- Map -->
+  <h3 class="text-xl font-semibold mb-2">Where you’ll be</h3>
+  <div class="map-container">
+    <div id="map" style="height: 400px;"></div>
+  </div>
+
+
+
+  <br /><hr /><br />
+
+<div *ngIf="listingReviews.length" class="reviews-section">
+  <h3>{{ listingReviews.length }} reviews</h3>
+
+  <div class="review-grid">
+    <div class="review-card" *ngFor="let review of listingReviews | slice:0:(showAllReviews ? listingReviews.length : 4)">
+      <div class="review-header">
+        <strong>{{ review.reviewerName }}</strong>
+        <span class="date">{{ review.createdAt | date: 'MMMM yyyy' }}</span>
+        <div class="stars">
+          <span *ngFor="let s of [1,2,3,4,5]" [class.filled]="s <= review.rating">★</span>
+        </div>
+      </div>
+      <p class="comment">“{{ review.comment }}”</p>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <button *ngIf="listingReviews.length > 4" (click)="showAllReviews = !showAllReviews" class="view-all-btn">
+      {{ showAllReviews ? 'Show Less' : 'View All Reviews' }}
+    </button>
+  </div>
+</div>
+
+
+</div>
+  
+
+
+   <br /><hr /><br />
+  <!-- <br /><hr /><br />
+<h3 class="section-title">What this place offers</h3>
+<div class="amenities-grid">
+  <div class="amenity-box" *ngFor="let item of listingAmenities">
+    <img [src]="item.iconUrl" alt="{{ item.name }}" class="amenity-icon" />
+    <span>{{ item.name }}</span>
+  </div>
+</div> -->
+
+ 

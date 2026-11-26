@@ -1,0 +1,11 @@
+
+
+<!-- app.component.html -->
+
+<app-header *ngIf="!isHostRoute && !isAdminRoute && !isLoginRoute && !isRegisterRoute"></app-header>
+
+<main class="min-h-screen">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer *ngIf="!isHostRoute && !isAdminRoute && !isLoginRoute && !isRegisterRoute"></app-footer>
