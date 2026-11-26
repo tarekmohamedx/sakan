@@ -101,7 +101,7 @@ namespace Sakan.Controllers.Host
 
         //    try
         //    {
-        //        var apiKey = "***REMOVED***";
+        //        var apiKey = "***REMOVED - rotate***";
         //        var publicKey = "public_2YywJbTJN/tanZ7CP3XsCz+Loec=";
 
         //        using var stream = file.OpenReadStream();
